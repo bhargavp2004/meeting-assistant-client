@@ -11,7 +11,7 @@ export default function Layout({ children }) {
         <AuthProvider>
           <ToastContainer position="top-right" autoClose={2000} />
           <Navbar />
-          <main className="p-6">{children}</main>
+          <main className="p-6 mt-5">{children}</main>
         </AuthProvider>
       </body>
     </html>

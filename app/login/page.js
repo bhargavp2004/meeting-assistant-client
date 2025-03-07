@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
 export default function Login() {
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const router = useRouter();
 
   const handleChange = (e) => {
@@ -35,29 +35,63 @@ export default function Login() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded shadow">
-      <h2 className="text-xl font-bold text-center text-blue-800">Login</h2>
-      <input
-        className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow mb-4 mt-4"
-        type="email"
-        name="email"
-        placeholder="Email"
-        value={formData["email"] || ""}
-        onChange={handleChange}
-      />
-
-      <input
-        className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow mb-4"
-        type="password"
-        name="password"
-        placeholder="Password"
-        value={formData["password"] || ""}
-        onChange={handleChange}
-      />
-
-      <button className="bg-blue-500 text-white w-full py-2 mt-4" onClick={handleLogin}>
-        Login
-      </button>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-800">Welcome Back</h2>
+          <p className="text-gray-600 mt-2">Sign in to your meeting assistant</p>
+        </div>
+        <form className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="you@example.com"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <label className="ml-2 block text-sm text-gray-700">Remember me</label>
+            </div>
+            <a href="#" className="text-sm text-indigo-600 hover:text-indigo-500">
+              Forgot password?
+            </a>
+          </div>
+          <button
+            type="button"
+            onClick={handleLogin}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            Sign in
+          </button>
+        </form>
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => router.push("/register")}
+            className="text-sm text-indigo-600 hover:text-indigo-500"
+          >
+            Don't have an account? Sign up
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
