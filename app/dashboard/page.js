@@ -40,41 +40,45 @@ export default function Dashboard() {
         </div>
 
         {/* Meetings Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {meetings.map((meeting) => (
-            <div key={meeting.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-semibold text-gray-800">{meeting.title}</h3>
-              </div>
-              <div className="space-y-2 text-sm text-gray-600">
-                <div className="flex items-center">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  {new Date(meeting.createdAt).toLocaleDateString()}
+        {meetings.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {meetings.map((meeting) => (
+              <div key={meeting.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800">{meeting.title}</h3>
+                </div>
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    {new Date(meeting.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-gray-100 flex space-x-4">
+                  {meeting.recordingurl && (
+                    <button className="text-indigo-600 hover:text-indigo-700 flex items-center" onClick={() => router.push(`/meetings/video/${meeting.id}`)}>
+                      <Video className="h-4 w-4 mr-1" />
+                      Recording
+                    </button>
+                  )}
+                  {meeting.transcripturl && (
+                    <button className="text-indigo-600 hover:text-indigo-700 flex items-center" onClick={() => router.push(`/meetings/transcription/${meeting.id}`)}>
+                      <FileText className="h-4 w-4 mr-1" />
+                      Transcript
+                    </button>
+                  )}
+                  {meeting.summarizationurl && (
+                    <button className="text-indigo-600 hover:text-indigo-700 flex items-center">
+                      <FileSpreadsheet className="h-4 w-4 mr-1" />
+                      Summary
+                    </button>
+                  )}
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-gray-100 flex space-x-4">
-                {meeting.recordingurl && (
-                  <button className="text-indigo-600 hover:text-indigo-700 flex items-center" onClick={() => router.push(`/meetings/video/${meeting.id}`)}>
-                    <Video className="h-4 w-4 mr-1" />
-                    Recording
-                  </button>
-                )}
-                {meeting.transcripturl && (
-                  <button className="text-indigo-600 hover:text-indigo-700 flex items-center" onClick={() => router.push(`/meetings/transcription/${meeting.id}`)}>
-                    <FileText className="h-4 w-4 mr-1" />
-                    Transcript
-                  </button>
-                )}
-                {meeting.summarizationurl && (
-                  <button className="text-indigo-600 hover:text-indigo-700 flex items-center">
-                    <FileSpreadsheet className="h-4 w-4 mr-1" />
-                    Summary
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-800">No meetings available.</p>
+        )}
       </div>
     </div>
   );

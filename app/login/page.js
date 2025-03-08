@@ -3,16 +3,38 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { useAuth } from "../components/AuthProvider";
 
 export default function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({});
   const router = useRouter();
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     setFormData((prevData) => ({ ...prevData, [e.target.name]: e.target.value }));
   };
 
+  const validate = () => {
+    let newErrors = {};
+
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Invalid email format";
+    }
+
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleLogin = async () => {
+    if (!validate()) return;
+
     const { email, password } = formData;
 
     try {
@@ -25,12 +47,13 @@ export default function Login() {
 
       if (res.ok) {
         toast.success("Login successful! Redirecting...", { autoClose: 2000 });
+        login();
         router.push("/dashboard");
       } else {
-        toast.error("Invalid credentials. Try again.");
+        setErrors({ general: "Invalid credentials. Try again." });
       }
     } catch (error) {
-      toast.error("Something went wrong. Please try again.");
+      setErrors({ general: "Something went wrong. Please try again." });
     }
   };
 
@@ -41,6 +64,7 @@ export default function Login() {
           <h2 className="text-3xl font-bold text-gray-800">Welcome Back</h2>
           <p className="text-gray-600 mt-2">Sign in to your meeting assistant</p>
         </div>
+        {errors.general && <p className="text-red-500 text-center mb-4">{errors.general}</p>}
         <form className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -49,9 +73,10 @@ export default function Login() {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="you@example.com"
             />
+            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Password</label>
@@ -60,20 +85,9 @@ export default function Login() {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block w-full text-black px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             />
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              />
-              <label className="ml-2 block text-sm text-gray-700">Remember me</label>
-            </div>
-            <a href="#" className="text-sm text-indigo-600 hover:text-indigo-500">
-              Forgot password?
-            </a>
+            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
           </div>
           <button
             type="button"

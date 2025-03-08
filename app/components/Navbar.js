@@ -1,21 +1,19 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../components/AuthProvider";
-import { Brain, Settings, LogOut } from "lucide-react";
+import { Brain, LogOut } from "lucide-react";
 
 export default function Navbar() {
-  const { isAuthenticated, login, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    console.log("is authenticated : ", isAuthenticated)
     if (isAuthenticated) {
       router.push("/dashboard");
     } else {
-      router.push("/login");
+      router.push("/");
     }
   }, [isAuthenticated, router]);
 
@@ -24,95 +22,60 @@ export default function Navbar() {
       .then((res) => {
         if (res.ok) {
           logout();
+          router.push("/");
         }
       })
       .catch(() => router.push("/login"));
   };
 
   return (
-    // <nav className="bg-white shadow-sm fixed w-full top-0 z-50">
-    //     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    //       <div className="flex justify-between h-16">
-    //         <div className="flex items-center space-x-8">
-    //           <h1 className="text-xl font-bold text-gray-800 flex items-center cursor-pointer" onClick={() => router.push("/home")}> 
-    //             <Brain className="h-6 w-6 mr-2 text-indigo-600" />
-    //             Meeting Assistant
-    //           </h1>
-    //           <div className="hidden md:flex space-x-4">
-    //             <button onClick={() => router.push("/dashboard")} className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-    //               Dashboard
-    //             </button>
-    //             <button className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-    //               Meetings
-    //             </button>
-                
-    //           </div>
-    //         </div>
-    //         <div className="flex items-center space-x-4">
-    //           <button className="text-gray-500 hover:text-gray-700">
-    //             <Settings className="h-5 w-5" />
-    //           </button>
-    //           <button onClick={() => router.push("/login")} className="text-gray-500 hover:text-gray-700">
-    //             <LogOut className="h-5 w-5" />
-    //           </button>
-    //         </div>
-    //       </div>
-    //     </div>
-    //   </nav>
-
-    <nav className="bg-white shadow-sm fixed w-full top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center space-x-8">
-            <h1 
-              onClick={() => router.push('/home')}
-              className="text-xl font-bold text-gray-800 cursor-pointer flex items-center"
-            >
-              <Brain className="h-6 w-6 mr-2 text-indigo-600" />
-              Meeting Assistant
-            </h1>
-            {isAuthenticated && (
-              <div className="hidden md:flex space-x-4">
-                <button 
-                  onClick={() => router.push('/dashboard')}
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Dashboard
-                </button>
-                {/* <button onClick={() => router.push("/")} className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                  Meetings
-                </button> */}
-              </div>
-            )}
+    <nav className="bg-white shadow-md fixed w-full top-0 z-50">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <div
+            className="flex items-center space-x-4 cursor-pointer"
+            onClick={() => router.push("/")}
+          >
+            <Brain className="h-7 w-7 text-indigo-600" />
+            <h1 className="text-xl font-semibold text-gray-800">Meeting Assistant</h1>
           </div>
-          <div className="flex items-center space-x-4">
+
+          {/* Right-Aligned Buttons */}
+          <div className="flex items-center space-x-6 ml-auto">
+            <button
+              onClick={() => router.push("/")}
+              className="text-gray-700 hover:text-indigo-600 px-4 py-2 rounded-md text-md font-medium transition-colors"
+            >
+              Home
+            </button>
+            {isAuthenticated && (
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="text-gray-700 hover:text-indigo-600 px-4 py-2 rounded-md text-md font-medium transition-colors"
+              >
+                Dashboard
+              </button>
+            )}
+
             {isAuthenticated ? (
-              <>
-                <button className="text-gray-500 hover:text-gray-700">
-                  <Settings className="h-5 w-5" />
-                </button>
-                <button 
-                  onClick={() => {
-                    handleLogout();
-                    setisAuthenticated(false);
-                    router.push("/home")
-                  }}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <LogOut className="h-5 w-5" />
-                </button>
-              </>
+              <button
+                onClick={handleLogout}
+                className="flex items-center text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-md font-medium transition-colors"
+              >
+                <LogOut className="h-5 w-5 mr-1" /> Logout
+              </button>
             ) : (
-              <div className="flex space-x-4">
+              <div className="flex space-x-3">
                 <button
-                  onClick={() => router.push('/login')}
-                  className="text-indigo-600 hover:text-indigo-700 px-3 py-2 rounded-md text-sm font-medium"
+                  onClick={() => router.push("/login")}
+                  className="text-indigo-600 hover:text-indigo-700 px-4 py-2 rounded-md text-md font-medium border border-indigo-600 transition-colors"
                 >
                   Sign In
                 </button>
                 <button
-                  onClick={() => router.push('/register')}
-                  className="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-md text-sm font-medium"
+                  onClick={() => router.push("/register")}
+                  className="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-md text-md font-medium transition-transform transform hover:scale-105"
                 >
                   Sign Up
                 </button>

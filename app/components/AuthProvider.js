@@ -4,23 +4,35 @@ import { createContext, useContext, useState, useEffect } from "react";
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(null); // Initially null to avoid flickering
+
+  const checkAuthStatus = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/authenticate", {
+        credentials: "include",
+        method: "GET",
+      });
+
+      if(res.ok)
+      {
+        setIsAuthenticated(res.ok);
+      }
+    } catch {
+      setIsAuthenticated(false);
+    }
+  };
 
   useEffect(() => {
-    fetch("http://localhost:3000/authenticate", {
-      credentials: "include",
-      method: 'GET',
-    })
-      .then((res) => {
-        if (res.ok) {
-          setIsAuthenticated(true);
-        }
-      })
-      .catch(() => setIsAuthenticated(false));
+    checkAuthStatus();
   }, []);
 
-  const login = () => setIsAuthenticated(true);
-  const logout = () => setIsAuthenticated(false);
+  const login = async () => {
+    await checkAuthStatus(); // Refresh the auth status on login
+  };
+
+  const logout = async () => {
+    setIsAuthenticated(false);
+  };
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
