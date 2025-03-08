@@ -15,6 +15,10 @@ export default function Register() {
   const validate = () => {
     let newErrors = {};
 
+    if (!formData.username) {
+      newErrors.username = "Username is required";
+    }
+
     if (!formData.email) {
       newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {

@@ -7,6 +7,9 @@ import "./globals.css";
 export default function Layout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <title>Meeting Assistant</title>
+      </head>
       <body className="min-h-screen bg-gray-100">
         <AuthProvider>
           <ToastContainer position="bottom-right" autoClose={2000} />
