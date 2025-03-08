@@ -50,7 +50,7 @@ export default function Register() {
     if (res.ok) {
       router.push("/login");
     } else {
-      setErrors({ general: "Registration failed. Try again." });
+      res.json().then((data) => setErrors({ general: data.message }));
     }
   };
 
@@ -63,6 +63,18 @@ export default function Register() {
         </div>
         {errors.general && <p className="text-red-500 text-center mb-4">{errors.general}</p>}
         <form className="space-y-4">
+        <div>
+            <label className="block text-sm font-medium text-gray-700">Username</label>
+            <input
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              className="mt-1 block text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="user2004"
+            />
+            {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username}</p>}
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Email</label>
             <input
@@ -72,18 +84,6 @@ export default function Register() {
               onChange={handleChange}
               className="mt-1 block text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="you@example.com"
-            />
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Username</label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              className="mt-1 block text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="user2004"
             />
             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
           </div>

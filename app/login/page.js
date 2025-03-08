@@ -50,7 +50,7 @@ export default function Login() {
         login();
         router.push("/dashboard");
       } else {
-        setErrors({ general: "Invalid credentials. Try again." });
+        res.json().then((data) => setErrors({ general: data.message }));
       }
     } catch (error) {
       setErrors({ general: "Something went wrong. Please try again." });
