@@ -104,7 +104,8 @@ export default function Dashboard() {
                     </button>
                   )}
                   {meeting.summarizationurl && (
-                    <button className="text-indigo-600 hover:text-indigo-700 flex items-center">
+                    <button className="text-indigo-600 hover:text-indigo-700 flex items-center"
+                    onClick={() => router.push(`/meetings/summarization/${meeting.id}`)}>
                       <FileSpreadsheet className="h-4 w-4 mr-1" />
                       Summary
                     </button>

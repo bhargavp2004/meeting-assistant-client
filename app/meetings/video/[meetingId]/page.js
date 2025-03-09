@@ -36,7 +36,7 @@ export default function VideoPage() {
   if (!videoUrl) return <p>No video available</p>;
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 mt-5">
       <h2 className="text-2xl font-semibold mb-4 text-black">Meeting Video</h2>
       <video controls className="w-full">
         <source src={videoUrl} type="video/mp4" />
