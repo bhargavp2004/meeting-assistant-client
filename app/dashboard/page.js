@@ -7,6 +7,7 @@ import { Calendar, Eye, Pencil, Trash, Search } from "lucide-react";
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [meetings, setMeetings] = useState([]);
+  const [filteredMeetings, setFilteredMeetings] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [editMeeting, setEditMeeting] = useState(null);
   const [newTitle, setNewTitle] = useState("");
@@ -19,7 +20,9 @@ export default function Dashboard() {
   const fetchMeetings = async (title = "") => {
     try {
       const res = await fetch(
-        `http://localhost:3000/media/meetings?title=${encodeURIComponent(title)}&email=${encodeURIComponent(email)}`,
+        `http://localhost:3000/media/meetings?title=${encodeURIComponent(
+          title
+        )}&email=${encodeURIComponent(email)}`,
         { credentials: "include" }
       );
       const data = await res.json();
@@ -33,12 +36,12 @@ export default function Dashboard() {
   // Fetch meetings with users details
   const fetchMeetingUsers = async () => {
     try {
-      const res = await fetch(
-        "http://localhost:3000/media/meeting-users",
-        { credentials: "include" }
-      );
+      const res = await fetch("http://localhost:3000/media/meeting-users", {
+        credentials: "include",
+      });
       const data = await res.json();
       setMeetings(data);
+      setFilteredMeetings(data);
       setLoading(false);
     } catch {
       router.push("/login");
@@ -51,7 +54,7 @@ export default function Dashboard() {
         if (!res.ok) {
           router.push("/login");
         } else {
-          if(isAdmin) {
+          if (isAdmin) {
             fetchMeetingUsers();
           } else {
             fetchMeetings();
@@ -63,7 +66,28 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchMeetings(searchTerm);
-  }, [searchTerm]);
+  }, isAdmin ? [] : [searchTerm]);
+
+  // Handle search
+  useEffect(() => {
+    if (isAdmin && meetings.length > 0) {
+      const filtered = meetings.filter((meeting) => {
+        const searchTermLower = searchTerm.toLowerCase();
+        return (
+          meeting.meeting.title.toLowerCase().includes(searchTermLower) ||
+          meeting.user.username.toLowerCase().includes(searchTermLower) ||
+          meeting.user.email.toLowerCase().includes(searchTermLower)
+        );
+      });
+      setFilteredMeetings(filtered);
+    } else {
+      // For regular users, filter meetings by title only
+      const filtered = meetings.filter((meeting) =>
+        meeting.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredMeetings(filtered);
+    }
+  }, [searchTerm, meetings, isAdmin]);
 
   const openEditModal = (meeting) => {
     setEditMeeting(meeting);
@@ -79,16 +103,21 @@ export default function Dashboard() {
     if (!editMeeting) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/media/meetings/${editMeeting.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: newTitle }),
-        credentials: "include",
-      });
+      const res = await fetch(
+        `http://localhost:3000/media/meetings/${editMeeting.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: newTitle }),
+          credentials: "include",
+        }
+      );
 
       if (res.ok) {
         setMeetings((prevMeetings) =>
-          prevMeetings.map((m) => (m.id === editMeeting.id ? { ...m, title: newTitle } : m))
+          prevMeetings.map((m) =>
+            m.id === editMeeting.id ? { ...m, title: newTitle } : m
+          )
         );
         closeEditModal();
       }
@@ -101,13 +130,18 @@ export default function Dashboard() {
     if (!deleteMeetingId) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/media/meetings/${deleteMeetingId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
+      const res = await fetch(
+        `http://localhost:3000/media/meetings/${deleteMeetingId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
 
       if (res.ok) {
-        setMeetings((prevMeetings) => prevMeetings.filter((m) => m.id !== deleteMeetingId));
+        setMeetings((prevMeetings) =>
+          prevMeetings.filter((m) => m.id !== deleteMeetingId)
+        );
       } else {
         console.error("Failed to delete meeting");
       }
@@ -118,59 +152,84 @@ export default function Dashboard() {
     }
   };
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
 
   const AdminView = () => (
     <div className="overflow-x-auto rounded-lg border border-gray-200">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-indigo-500 text-white">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">ID</th>
-            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Username</th>
-            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Email</th>
-            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Title</th>
-            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Date</th>
-            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">View</th>
-            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Delete</th>
+            <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider">
+              ID
+            </th>
+            <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider">
+              Username
+            </th>
+            <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider">
+              Email
+            </th>
+            <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider">
+              Title
+            </th>
+            <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider">
+              Date
+            </th>
+            <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider">
+              Details
+            </th>
+            <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider">
+              Delete
+            </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {meetings.map((meeting, index) => (
+          {filteredMeetings.map((meeting, index) => (
             <tr key={meeting.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{meeting?.user?.username}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{meeting?.user?.email}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{meeting?.meeting?.title}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td className="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-500">
+                {index + 1}
+              </td>
+              <td className="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-500">
+                {meeting?.user?.username}
+              </td>
+              <td className="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-500">
+                {meeting?.user?.email}
+              </td>
+              <td className="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-900">
+                {meeting?.meeting?.title}
+              </td>
+              <td className="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-500">
                 {new Date(meeting?.meeting?.createdAt).toLocaleDateString()}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <button
-                    className="text-indigo-600 hover:text-indigo-900 flex items-center"
-                    onClick={() => router.push(`/meetings/details/${meeting.meeting.id}`)}
-                  >
-                    View
-                  </button>
+              <td className="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-500">
+                <button
+                  className="text-indigo-600 hover:text-indigo-900"
+                  onClick={() =>
+                    router.push(`/meetings/details/${meeting.meeting.id}`)
+                  }
+                >
+                  View
+                </button>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              <button
-                    className="text-red-600 hover:text-red-900 flex items-center"
-                    onClick={() => setDeleteMeetingId(meeting.meeting.id)}
-                  >
-                    Delete
-                  </button>
+              <td className="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-500">
+                <button
+                  className="text-red-600 hover:text-red-900"
+                  onClick={() => setDeleteMeetingId(meeting.meeting.id)}
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <div className="bg-white px-6 py-3 flex items-center justify-between border-t border-gray-200">
+      {/* <div className="bg-white px-6 py-3 flex items-center justify-between border-t border-gray-200">
         <div className="text-sm text-gray-700">
-          Showing 1 to {meetings.length} of {meetings.length} Entries
+          Showing 1 to {filteredMeetings.length} of {filteredMeetings.length} Entries
         </div>
         <div className="flex space-x-2">
           <button className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
@@ -180,6 +239,26 @@ export default function Dashboard() {
             Next
           </button>
         </div>
+      </div> */}
+      <div className="bg-white px-6 py-3 flex items-center justify-between border-t border-gray-200">
+        {filteredMeetings.length > 0 ? (
+          <>
+            <div className="text-sm text-gray-700">
+              Showing 1 to {filteredMeetings.length} of{" "}
+              {filteredMeetings.length} Entries
+            </div>
+            <div className="flex space-x-2">
+              <button className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                Prev
+              </button>
+              <button className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                Next
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="text-sm text-gray-700">No meetings available.</div>
+        )}
       </div>
     </div>
   );
@@ -187,8 +266,13 @@ export default function Dashboard() {
   const UserView = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {meetings.map((meeting) => (
-        <div key={meeting.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">{meeting.title}</h3>
+        <div
+          key={meeting.id}
+          className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+        >
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+            {meeting.title}
+          </h3>
           <div className="flex items-center text-sm text-gray-600">
             <Calendar className="h-4 w-4 mr-2" />
             {new Date(meeting.createdAt).toLocaleDateString()}
@@ -233,7 +317,11 @@ export default function Dashboard() {
         </div>
 
         {meetings.length > 0 ? (
-          isAdmin ? <AdminView /> : <UserView />
+          isAdmin ? (
+            <AdminView />
+          ) : (
+            <UserView />
+          )
         ) : (
           <p className="text-gray-800">No meetings available.</p>
         )}
@@ -251,10 +339,16 @@ export default function Dashboard() {
               className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <div className="mt-4 flex justify-end space-x-2">
-              <button onClick={closeEditModal} className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
+              <button
+                onClick={closeEditModal}
+                className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+              >
                 Cancel
               </button>
-              <button onClick={handleSaveEdit} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+              <button
+                onClick={handleSaveEdit}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              >
                 Save
               </button>
             </div>
@@ -266,13 +360,23 @@ export default function Dashboard() {
       {deleteMeetingId && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-lg text-black mt-3 font-bold mb-4">Confirm Deletion</h2>
-            <p className="text-gray-700">Are you sure you want to delete this meeting?</p>
+            <h2 className="text-lg text-black mt-3 font-bold mb-4">
+              Confirm Deletion
+            </h2>
+            <p className="text-gray-700">
+              Are you sure you want to delete this meeting?
+            </p>
             <div className="mt-4 flex justify-end space-x-2">
-              <button onClick={() => setDeleteMeetingId(null)} className="px-4 py-2 text-white bg-gray-500 rounded-lg hover:bg-gray-400">
+              <button
+                onClick={() => setDeleteMeetingId(null)}
+                className="px-4 py-2 text-white bg-gray-500 rounded-lg hover:bg-gray-400"
+              >
                 Cancel
               </button>
-              <button onClick={confirmDelete} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
                 Confirm
               </button>
             </div>
