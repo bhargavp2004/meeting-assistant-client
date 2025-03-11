@@ -49,6 +49,7 @@ export default function Login() {
         toast.success("Login successful! Redirecting...", { autoClose: 2000 });
         login();
         router.push("/dashboard");
+        localStorage.setItem("email", email);
       } else {
         res.json().then((data) => setErrors({ general: data.message }));
       }

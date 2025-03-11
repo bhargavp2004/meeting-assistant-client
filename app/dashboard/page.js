@@ -10,14 +10,31 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editMeeting, setEditMeeting] = useState(null);
   const [newTitle, setNewTitle] = useState("");
-  const [deleteMeetingId, setDeleteMeetingId] = useState(null); // Track meeting to delete
+  const [deleteMeetingId, setDeleteMeetingId] = useState(null);
   const router = useRouter();
+  const email = localStorage.getItem("email");
+  const isAdmin = email === "admin@gmail.com";
 
   // Fetch meetings
   const fetchMeetings = async (title = "") => {
     try {
       const res = await fetch(
-        `http://localhost:3000/media/meetings?title=${encodeURIComponent(title)}`,
+        `http://localhost:3000/media/meetings?title=${encodeURIComponent(title)}&email=${encodeURIComponent(email)}`,
+        { credentials: "include" }
+      );
+      const data = await res.json();
+      setMeetings(data);
+      setLoading(false);
+    } catch {
+      router.push("/login");
+    }
+  };
+
+  // Fetch meetings with users details
+  const fetchMeetingUsers = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:3000/media/meeting-users",
         { credentials: "include" }
       );
       const data = await res.json();
@@ -34,7 +51,11 @@ export default function Dashboard() {
         if (!res.ok) {
           router.push("/login");
         } else {
-          fetchMeetings();
+          if(isAdmin) {
+            fetchMeetingUsers();
+          } else {
+            fetchMeetings();
+          }
         }
       })
       .catch(() => router.push("/login"));
@@ -97,7 +118,105 @@ export default function Dashboard() {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+    </div>
+  );
+
+  const AdminView = () => (
+    <div className="overflow-x-auto rounded-lg border border-gray-200">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-indigo-500 text-white">
+          <tr>
+            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">ID</th>
+            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Username</th>
+            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Email</th>
+            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Title</th>
+            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Date</th>
+            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">View</th>
+            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Delete</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {meetings.map((meeting, index) => (
+            <tr key={meeting.id} className="hover:bg-gray-50">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{meeting?.user?.username}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{meeting?.user?.email}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{meeting?.meeting?.title}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {new Date(meeting?.meeting?.createdAt).toLocaleDateString()}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <button
+                    className="text-indigo-600 hover:text-indigo-900 flex items-center"
+                    onClick={() => router.push(`/meetings/details/${meeting.meeting.id}`)}
+                  >
+                    View
+                  </button>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <button
+                    className="text-red-600 hover:text-red-900 flex items-center"
+                    onClick={() => setDeleteMeetingId(meeting.meeting.id)}
+                  >
+                    Delete
+                  </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="bg-white px-6 py-3 flex items-center justify-between border-t border-gray-200">
+        <div className="text-sm text-gray-700">
+          Showing 1 to {meetings.length} of {meetings.length} Entries
+        </div>
+        <div className="flex space-x-2">
+          <button className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+            Prev
+          </button>
+          <button className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const UserView = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {meetings.map((meeting) => (
+        <div key={meeting.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">{meeting.title}</h3>
+          <div className="flex items-center text-sm text-gray-600">
+            <Calendar className="h-4 w-4 mr-2" />
+            {new Date(meeting.createdAt).toLocaleDateString()}
+          </div>
+          <div className="mt-4 pt-4 border-t border-gray-100 flex space-x-4">
+            <button
+              className="text-indigo-600 hover:text-indigo-700 flex items-center"
+              onClick={() => router.push(`/meetings/details/${meeting.id}`)}
+            >
+              <Eye className="h-4 w-4 mr-1" /> View
+            </button>
+            <button
+              className="text-green-600 hover:text-green-700 flex items-center"
+              onClick={() => openEditModal(meeting)}
+            >
+              <Pencil className="h-4 w-4 mr-1" /> Edit
+            </button>
+            <button
+              className="text-red-600 hover:text-red-700 flex items-center"
+              onClick={() => setDeleteMeetingId(meeting.id)}
+            >
+              <Trash className="h-4 w-4 mr-1" /> Delete
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -114,44 +233,14 @@ export default function Dashboard() {
         </div>
 
         {meetings.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {meetings.map((meeting) => (
-              <div key={meeting.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">{meeting.title}</h3>
-                <div className="flex items-center text-sm text-gray-600">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  {new Date(meeting.createdAt).toLocaleDateString()}
-                </div>
-                <div className="mt-4 pt-4 border-t border-gray-100 flex space-x-4">
-                  <button
-                    className="text-indigo-600 hover:text-indigo-700 flex items-center"
-                    onClick={() => router.push(`/meetings/details/${meeting.id}`)}
-                  >
-                    <Eye className="h-4 w-4 mr-1" /> View
-                  </button>
-                  <button
-                    className="text-green-600 hover:text-green-700 flex items-center"
-                    onClick={() => openEditModal(meeting)}
-                  >
-                    <Pencil className="h-4 w-4 mr-1" /> Edit
-                  </button>
-                  <button
-                    className="text-red-600 hover:text-red-700 flex items-center"
-                    onClick={() => setDeleteMeetingId(meeting.id)}
-                  >
-                    <Trash className="h-4 w-4 mr-1" /> Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+          isAdmin ? <AdminView /> : <UserView />
         ) : (
           <p className="text-gray-800">No meetings available.</p>
         )}
       </div>
 
       {/* Edit Modal */}
-      {editMeeting && (
+      {editMeeting && !isAdmin && (
         <div className="fixed inset-0 flex text-gray-900 items-center justify-center bg-black bg-opacity-30">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             <h2 className="text-lg font-semibold mb-4">Edit Meeting Title</h2>
