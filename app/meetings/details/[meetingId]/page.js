@@ -5,6 +5,26 @@ import { useRouter, useParams } from "next/navigation";
 import { ChevronLeft, Calendar, Video, Users } from "lucide-react";
 
 export default function MeetingDetailsPage() {
+  const downloadFile = async (fileUrl, fileName) => {
+    try {
+      const response = await fetch(fileUrl);
+      const textContent = await response.text();
+  
+      const blob = new Blob([textContent], { type: "text/plain" });
+      const link = document.createElement("a");
+  
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+  
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      alert("Failed to download the file.");
+    }
+  };
+  
   const router = useRouter();
   const params = useParams();
   const meetingId = params.meetingId;
@@ -33,8 +53,16 @@ export default function MeetingDetailsPage() {
       });
   }, [meetingId]);
 
-  if (loading) return <p className="text-center text-gray-600 mt-10">Loading meeting details...</p>;
-  if (!meeting) return <p className="text-center text-gray-600 mt-10">Meeting not found.</p>;
+  if (loading)
+    return (
+      <p className="text-center text-gray-600 mt-10">
+        Loading meeting details...
+      </p>
+    );
+  if (!meeting)
+    return (
+      <p className="text-center text-gray-600 mt-10">Meeting not found.</p>
+    );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -50,7 +78,9 @@ export default function MeetingDetailsPage() {
 
         {/* Meeting Info */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h1 className="text-2xl font-semibold text-gray-900">{meeting.title}</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            {meeting.title}
+          </h1>
           <div className="flex items-center text-gray-600 mt-2">
             <Calendar className="h-5 w-5 mr-2 text-indigo-600" />
             <p>Created on {new Date(meeting.createdAt).toLocaleDateString()}</p>
@@ -62,7 +92,9 @@ export default function MeetingDetailsPage() {
           <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center mb-4">
               <Video className="h-5 w-5 text-indigo-600 mr-2" />
-              <h2 className="text-xl font-semibold text-gray-900">Meeting Recording</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Meeting Recording
+              </h2>
             </div>
             {meeting.recordingurl ? (
               <video controls className="w-full rounded-lg shadow-sm">
@@ -78,12 +110,17 @@ export default function MeetingDetailsPage() {
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center mb-4">
               <Users className="h-5 w-5 text-indigo-600 mr-2" />
-              <h2 className="text-xl font-semibold text-gray-900">Users with Access</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Users with Access
+              </h2>
             </div>
             <div className="max-h-64 overflow-y-auto space-y-2">
               {accessList && accessList.length > 0 ? (
                 accessList.map((user, index) => (
-                  <div key={index} className="flex items-center p-2 border rounded-lg bg-gray-50">
+                  <div
+                    key={index}
+                    className="flex items-center p-2 border rounded-lg bg-gray-50"
+                  >
                     <div className="w-8 h-8 flex items-center justify-center bg-indigo-200 text-indigo-600 rounded-full font-semibold mr-3">
                       {user.charAt(0).toUpperCase()}
                     </div>
@@ -94,7 +131,9 @@ export default function MeetingDetailsPage() {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-600">No users have access to this meeting.</p>
+                <p className="text-gray-600">
+                  No users have access to this meeting.
+                </p>
               )}
             </div>
           </div>
@@ -105,7 +144,9 @@ export default function MeetingDetailsPage() {
           <div className="flex border-b">
             <button
               className={`w-1/2 py-2 text-center border-b-2 font-semibold ${
-                activeTab === "transcript" ? "border-indigo-600 text-indigo-600" : "text-gray-500"
+                activeTab === "transcript"
+                  ? "border-indigo-600 text-indigo-600"
+                  : "text-gray-500"
               }`}
               onClick={() => setActiveTab("transcript")}
             >
@@ -113,22 +154,59 @@ export default function MeetingDetailsPage() {
             </button>
             <button
               className={`w-1/2 py-2 text-center border-b-2 font-semibold ${
-                activeTab === "summary" ? "border-indigo-600 text-indigo-600" : "text-gray-500"
+                activeTab === "summary"
+                  ? "border-indigo-600 text-indigo-600"
+                  : "text-gray-500"
               }`}
               onClick={() => setActiveTab("summary")}
             >
               Summary
             </button>
           </div>
+
           <div className="bg-gray-50 rounded-lg p-4 max-h-[400px] overflow-y-auto mt-4">
             {activeTab === "transcript" ? (
               meeting.transcripturl ? (
-                <iframe src={meeting.transcripturl} className="w-full h-96" title="Transcription"></iframe>
+                <>
+                  <iframe
+                    src={meeting.transcripturl}
+                    className="w-full h-72"
+                    title="Transcription"
+                  ></iframe>
+                  <button
+                    onClick={() =>
+                      downloadFile(
+                        meeting.transcripturl,
+                        `${meeting.title}_transcript.txt`
+                      )
+                    }
+                    className="mt-4 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
+                  >
+                    Download Transcript
+                  </button>
+                </>
               ) : (
                 <p className="text-gray-600">No transcription available</p>
               )
             ) : meeting.summarizationurl ? (
-              <iframe src={meeting.summarizationurl} className="w-full h-96" title="Summarization"></iframe>
+              <>
+                <iframe
+                  src={meeting.summarizationurl}
+                  className="w-full h-72"
+                  title="Summarization"
+                ></iframe>
+                <button
+                  onClick={() =>
+                    downloadFile(
+                      meeting.summarizationurl,
+                      `${meeting.title}_summary.txt`
+                    )
+                  }
+                  className="mt-4 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
+                >
+                  Download Summary
+                </button>
+              </>
             ) : (
               <p className="text-gray-600">No summarization available</p>
             )}
