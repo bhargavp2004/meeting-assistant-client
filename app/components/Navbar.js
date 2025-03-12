@@ -50,12 +50,20 @@ export default function Navbar() {
               Home
             </button>
             {isAuthenticated && (
+              <div>
               <button
                 onClick={() => router.push("/dashboard")}
                 className="text-gray-700 hover:text-indigo-600 px-4 py-2 rounded-md text-md font-medium transition-colors"
               >
                 Dashboard
               </button>
+              <button
+                onClick={() => router.push("/meetings/upload")}
+                className="text-gray-700 hover:text-indigo-600 px-4 py-2 rounded-md text-md font-medium transition-colors"
+              >
+                Transcribe File
+              </button>
+              </div>
             )}
 
             {isAuthenticated ? (
