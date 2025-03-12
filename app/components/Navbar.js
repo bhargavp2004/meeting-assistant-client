@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../components/AuthProvider";
 import { Brain, LogOut } from "lucide-react";
 
 export default function Navbar() {
   const { isAuthenticated, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname(); // Get current route path
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -45,25 +46,33 @@ export default function Navbar() {
           <div className="flex items-center space-x-6 ml-auto">
             <button
               onClick={() => router.push("/")}
-              className="text-gray-700 hover:text-indigo-600 px-4 py-2 rounded-md text-md font-medium transition-colors"
+              className={`relative text-gray-700 hover:text-indigo-600 px-4 py-2 rounded-md text-md font-medium transition-colors ${
+                pathname === "/" ? "text-indigo-600 after:block after:w-full after:h-0.5 after:bg-indigo-600 after:mt-1" : ""
+              }`}
             >
               Home
             </button>
+
             {isAuthenticated && (
-              <div>
-              <button
-                onClick={() => router.push("/dashboard")}
-                className="text-gray-700 hover:text-indigo-600 px-4 py-2 rounded-md text-md font-medium transition-colors"
-              >
-                Dashboard
-              </button>
-              <button
-                onClick={() => router.push("/meetings/upload")}
-                className="text-gray-700 hover:text-indigo-600 px-4 py-2 rounded-md text-md font-medium transition-colors"
-              >
-                Transcribe File
-              </button>
-              </div>
+              <>
+                <button
+                  onClick={() => router.push("/dashboard")}
+                  className={`relative text-gray-700 hover:text-indigo-600 px-4 py-2 rounded-md text-md font-medium transition-colors ${
+                    pathname === "/dashboard" ? "text-indigo-600 after:block after:w-full after:h-0.5 after:bg-indigo-600 after:mt-1" : ""
+                  }`}
+                >
+                  Dashboard
+                </button>
+
+                <button
+                  onClick={() => router.push("/meetings/upload")}
+                  className={`relative text-gray-700 hover:text-indigo-600 px-4 py-2 rounded-md text-md font-medium transition-colors ${
+                    pathname === "/meetings/upload" ? "text-indigo-600 after:block after:w-full after:h-0.5 after:bg-indigo-600 after:mt-1" : ""
+                  }`}
+                >
+                  Transcribe File
+                </button>
+              </>
             )}
 
             {isAuthenticated ? (
