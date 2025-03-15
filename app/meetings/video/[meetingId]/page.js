@@ -8,20 +8,15 @@ export default function VideoPage() {
   const params = useParams(); // Get meetingId from the URL
   const meetingId = params.meetingId; // Extract meetingId from params
 
-  console.log("Meeting ID from URL params:", meetingId);
-
   const [loading, setLoading] = useState(true);
   const [videoUrl, setVideoUrl] = useState(null);
 
   useEffect(() => {
     if (!meetingId) return;
 
-    console.log("Fetching video for meetingId:", meetingId);
-
     fetch(`http://localhost:3000/media/meetings/${meetingId}/video`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
-        console.log("Video data received:", data);
         setVideoUrl(data.videoUrl);
         setLoading(false);
       })

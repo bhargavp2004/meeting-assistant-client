@@ -38,16 +38,12 @@ const UploadPage = () => {
                 body: file,
             });
 
-            console.log("Uploading completed")
-
             if (!uploadResponse.ok) {
                 throw new Error("File upload failed");
             }
 
             const uploadData = await uploadResponse.json();
             const audioUrl = uploadData.upload_url;
-
-            console.log("Audio url : ", audioUrl);
 
             // Call AssemblyAI to transcribe and summarize
             const transcriptResponse = await fetch("https://api.assemblyai.com/v2/transcript", {
@@ -75,7 +71,6 @@ const UploadPage = () => {
             // Poll for transcript completion
             let transcriptStatus = "queued";
             let transcriptResult;
-            console.log("Starting transcription")
 
             while (transcriptStatus !== "completed") {
                 const checkResponse = await fetch(`https://api.assemblyai.com/v2/transcript/${transcriptId}`, {
@@ -88,7 +83,6 @@ const UploadPage = () => {
                 }
 
                 transcriptResult = await checkResponse.json();
-                console.log("Transcript result : ", transcriptResult);
                 transcriptStatus = transcriptResult.status;
 
                 if (transcriptStatus === "failed") {

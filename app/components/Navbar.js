@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../components/AuthProvider";
-import { Brain, LogOut } from "lucide-react";
+import { Brain, LogOut, UserCircle2 } from "lucide-react";
 
 export default function Navbar() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth(); // Assuming `user` contains { username, email, avatarUrl }
   const router = useRouter();
-  const pathname = usePathname(); // Get current route path
+  const pathname = usePathname();
+  const [isProfileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -16,7 +17,7 @@ export default function Navbar() {
     } else {
       router.push("/");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, user]);
 
   const handleLogout = () => {
     fetch("http://localhost:3000/logout", { credentials: "include" })
@@ -76,12 +77,42 @@ export default function Navbar() {
             )}
 
             {isAuthenticated ? (
-              <button
-                onClick={handleLogout}
-                className="flex items-center text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-md font-medium transition-colors"
-              >
-                <LogOut className="h-5 w-5 mr-1" /> Logout
-              </button>
+              <div className="relative">
+                {/* User Profile Button */}
+                <button
+                  onClick={() => setProfileOpen(!isProfileOpen)}
+                  className="flex items-center space-x-2 text-gray-700 hover:text-indigo-600 focus:outline-none"
+                >
+                  {user?.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full border border-gray-300"
+                    />
+                  ) : (
+                    <UserCircle2 className="w-8 h-8 text-gray-600" />
+                  )}
+                  <span className="text-md font-medium">{user?.username || "User"}</span>
+                </button>
+
+                {/* Dropdown Menu */}
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border">
+                    <button
+                      onClick={() => router.push("/profile")}
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left"
+                    >
+                      View Profile
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center w-full px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      <LogOut className="h-5 w-5 mr-2" /> Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <div className="flex space-x-3">
                 <button

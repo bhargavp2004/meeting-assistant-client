@@ -116,16 +116,16 @@ export default function MeetingDetailsPage() {
             </div>
             <div className="max-h-64 overflow-y-auto space-y-2">
               {accessList && accessList.length > 0 ? (
-                accessList.map((user, index) => (
+                accessList.map(({email, username}, index) => (
                   <div
                     key={index}
                     className="flex items-center p-2 border rounded-lg bg-gray-50"
                   >
                     <div className="w-8 h-8 flex items-center justify-center bg-indigo-200 text-indigo-600 rounded-full font-semibold mr-3">
-                      {user.charAt(0).toUpperCase()}
+                      {email.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-gray-900 font-medium">{user}</p>
+                      <p className="text-gray-900 font-medium">{email}</p>
                       {/* <p className="text-gray-600 text-sm">{user.email}</p> */}
                     </div>
                   </div>

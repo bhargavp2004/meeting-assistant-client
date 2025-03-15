@@ -8,20 +8,15 @@ export default function SummarizationPage() {
     const params = useParams(); // Get meetingId from the URL
     const meetingId = params.meetingId; // Extract meetingId from params
 
-    console.log("Meeting ID from URL params:", meetingId);
-
     const [loading, setLoading] = useState(true);
     const [summarizationUrl, setSummarizationUrl] = useState(null);
 
     useEffect(() => {
         if (!meetingId) return;
 
-        console.log("Fetching summarization for meetingId:", meetingId);
-
         fetch(`http://localhost:3000/media/meetings/${meetingId}/summarization`, { credentials: "include" })
             .then((res) => res.json())
             .then((data) => {
-                console.log("Summarization data received:", data);
                 setSummarizationUrl(data.summarizationUrl);
                 setLoading(false);
             })
