@@ -318,7 +318,7 @@ export default function Dashboard() {
 
       {/* Edit Modal */}
       {editMeeting && !isAdmin && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 px-2 sm:px-0">
+        <div className="fixed text-gray-900 inset-0 flex items-center justify-center bg-black bg-opacity-30 px-2 sm:px-0">
           <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg w-full max-w-md">
             <h2 className="text-base sm:text-lg font-semibold mb-4">
               Edit Meeting Title
