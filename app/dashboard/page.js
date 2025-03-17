@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Calendar, Eye, Pencil, Trash, Search, ShieldAlert } from "lucide-react";
+import { toast } from "react-toastify";
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
@@ -113,16 +114,25 @@ export default function Dashboard() {
         }
       );
 
+      const result = await res.json();
+
       if (res.ok) {
         setMeetings((prevMeetings) =>
           prevMeetings.map((m) =>
             m.id === editMeeting.id ? { ...m, title: newTitle } : m
           )
         );
+        toast.success("Meeting details edited successfully! Redirecting...", { autoClose: 2000 });
+        closeEditModal();
+      }
+      else {
+        toast.error(`Failed to edit meeting details. ${result.error}`, { autoClose: 2000 });
         closeEditModal();
       }
     } catch (error) {
-      console.error("Error updating meeting:", error);
+      // console.error("Error updating meeting:", error);
+      toast.error(`Failed to edit meeting details.`, { autoClose: 2000 });
+      closeEditModal();
     }
   };
 
@@ -138,15 +148,21 @@ export default function Dashboard() {
         }
       );
 
+      const result = await res.json();
+      console.log("Delete Response:", res.status, result);
+
       if (res.ok) {
         setMeetings((prevMeetings) =>
           prevMeetings.filter((m) => m.id !== deleteMeetingId)
         );
+        toast.success("Meeting deleted successfully!", { autoClose: 2000 });
       } else {
-        console.error("Failed to delete meeting");
+        console.warn("Failed to delete meeting", result.error);
+        toast.error(`Failed to delete meeting. ${result.error}`, { autoClose: 2000 });
       }
     } catch (error) {
       console.error("Error deleting meeting:", error);
+      toast.error("Failed to delete meeting.", { autoClose: 2000 });
     } finally {
       setDeleteMeetingId(null);
     }
@@ -300,7 +316,7 @@ export default function Dashboard() {
               onClick={() => router.push(`/meetings/meetingAccess/${meeting.id}`)}
               className="text-indigo-600 hover:text-indigo-700 flex items-center flex-nowrap"
             >
-              <ShieldAlert className="h-4 w-4 mr-1"/>
+              <ShieldAlert className="h-4 w-4 mr-1" />
               Manage Access
             </button>
           </div>

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, Mail, X, Plus } from "react-feather";
 import { useRouter, useParams } from "next/navigation";
+import { toast } from "react-toastify";
 
 const AccessManagementPage = () => {
   const [meeting, setMeeting] = useState(null);
@@ -66,13 +67,13 @@ const AccessManagementPage = () => {
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {
-          console.error('Error granting access:', data.error);
+          toast.error("Error granting access. ", data.error);
         } else {
           const emailsToAdd = validEmails.map((email) => ({username: "", email: email}));
           setAccessList([...accessList, ...emailsToAdd]);
           setEmailInputs([""]); // Reset input fields
           setErrors([]);
-
+          toast.success("Access granted successfully!");
           // router.push(`/meetings/meetingAccess/${meetingId}`)
         }
       })
