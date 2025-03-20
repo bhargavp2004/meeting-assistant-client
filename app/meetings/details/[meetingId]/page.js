@@ -3,19 +3,19 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ChevronLeft, Calendar, Video, Users } from "lucide-react";
+import translate from "translate";
+
+translate.engine = "google";
 
 export default function MeetingDetailsPage() {
-  const downloadFile = async (fileUrl, fileName) => {
+  const downloadFile = (content, fileName) => {
     try {
-      const response = await fetch(fileUrl);
-      const textContent = await response.text();
-  
-      const blob = new Blob([textContent], { type: "text/plain" });
+      const blob = new Blob([content], { type: "text/plain" });
       const link = document.createElement("a");
-  
+
       link.href = URL.createObjectURL(blob);
       link.download = fileName;
-  
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -24,15 +24,18 @@ export default function MeetingDetailsPage() {
       alert("Failed to download the file.");
     }
   };
-  
+
   const router = useRouter();
   const params = useParams();
   const meetingId = params.meetingId;
 
   const [loading, setLoading] = useState(true);
   const [meeting, setMeeting] = useState(null);
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [accessList, setAccessList] = useState([]);
   const [activeTab, setActiveTab] = useState("transcript");
+  const [transcriptContent, setTranscriptContent] = useState(null);
+  const [summaryContent, setSummaryContent] = useState(null);
 
   useEffect(() => {
     if (!meetingId) return;
@@ -42,9 +45,17 @@ export default function MeetingDetailsPage() {
       credentials: "include",
     })
       .then((res) => res.json())
-      .then((data) => {
+      .then(async (data) => {
         setMeeting(data.meeting);
         setAccessList(data.accessList);
+
+        if (data.meeting.transcripturl) {
+          await fetchTranscriptContent(data.meeting.transcripturl);
+        }
+        if (data.meeting.summarizationurl) {
+          await fetchSummaryContent(data.meeting.summarizationurl);
+        }
+
         setLoading(false);
       })
       .catch((error) => {
@@ -52,6 +63,56 @@ export default function MeetingDetailsPage() {
         setLoading(false);
       });
   }, [meetingId]);
+
+  // Fetch and translate transcript content
+  const fetchTranscriptContent = async (url) => {
+    try {
+      const response = await fetch(url);
+      const content = await response.text();
+      translateContent(content, setTranscriptContent);
+    } catch (error) {
+      console.error("Error fetching transcript content:", error);
+      setTranscriptContent("Failed to load transcript.");
+    }
+  };
+
+  // Fetch and translate summary content
+  const fetchSummaryContent = async (url) => {
+    try {
+      const response = await fetch(url);
+      const content = await response.text();
+      translateContent(content, setSummaryContent);
+    } catch (error) {
+      console.error("Error fetching summary content:", error);
+      setSummaryContent("Failed to load summary.");
+    }
+  };
+
+  // Translate content dynamically
+  const translateContent = async (content, setContent) => {
+    if (selectedLanguage === "en") {
+      setContent(content);
+    } else {
+      try {
+        const result = await translate(content, {to: selectedLanguage});
+        console.log(result);
+        setContent(result);
+      } catch (error) {
+        console.error("Error translating content:", error);
+        setContent("Failed to translate content.");
+      }
+    }
+  };
+
+  // Re-fetch and translate when language changes
+  useEffect(() => {
+    if (meeting?.transcripturl) {
+      fetchTranscriptContent(meeting.transcripturl);
+    }
+    if (meeting?.summarizationurl) {
+      fetchSummaryContent(meeting.summarizationurl);
+    }
+  }, [selectedLanguage]);
 
   if (loading)
     return (
@@ -116,7 +177,7 @@ export default function MeetingDetailsPage() {
             </div>
             <div className="max-h-64 overflow-y-auto space-y-2">
               {accessList && accessList.length > 0 ? (
-                accessList.map(({email, username}, index) => (
+                accessList.map(({ email }, index) => (
                   <div
                     key={index}
                     className="flex items-center p-2 border rounded-lg bg-gray-50"
@@ -126,7 +187,6 @@ export default function MeetingDetailsPage() {
                     </div>
                     <div>
                       <p className="text-gray-900 font-medium">{email}</p>
-                      {/* <p className="text-gray-600 text-sm">{user.email}</p> */}
                     </div>
                   </div>
                 ))
@@ -141,6 +201,27 @@ export default function MeetingDetailsPage() {
 
         {/* Transcript & Summary Tabs */}
         <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+          {/* Language Dropdown */}
+          <div className="mb-4">
+            <label
+              htmlFor="language"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Select Language
+            </label>
+            <select
+              id="language"
+              value={selectedLanguage}
+              onChange={(e) => setSelectedLanguage(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 text-black rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="en">English</option>
+              <option value="hi">Hindi</option>
+              <option value="gu">Gujarat</option>
+            </select>
+          </div>
+
+          {/* Tabs */}
           <div className="flex border-b">
             <button
               className={`w-1/2 py-2 text-center border-b-2 font-semibold ${
@@ -164,52 +245,51 @@ export default function MeetingDetailsPage() {
             </button>
           </div>
 
+          {/* Content Section */}
           <div className="bg-gray-50 rounded-lg p-4 max-h-[400px] overflow-y-auto mt-4">
             {activeTab === "transcript" ? (
-              meeting.transcripturl ? (
-                <>
-                  <iframe
-                    src={meeting.transcripturl}
-                    className="w-full h-72"
-                    title="Transcription"
-                  ></iframe>
-                  <button
-                    onClick={() =>
-                      downloadFile(
-                        meeting.transcripturl,
-                        `${meeting.title}_transcript.txt`
-                      )
-                    }
-                    className="mt-4 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
-                  >
-                    Download Transcript
-                  </button>
-                </>
+              transcriptContent ? (
+                <pre className="text-gray-700 whitespace-pre-wrap">
+                  {transcriptContent}
+                </pre>
               ) : (
-                <p className="text-gray-600">No transcription available</p>
+                <p className="text-gray-600">No transcript available</p>
               )
-            ) : meeting.summarizationurl ? (
-              <>
-                <iframe
-                  src={meeting.summarizationurl}
-                  className="w-full h-72"
-                  title="Summarization"
-                ></iframe>
-                <button
-                  onClick={() =>
-                    downloadFile(
-                      meeting.summarizationurl,
-                      `${meeting.title}_summary.txt`
-                    )
-                  }
-                  className="mt-4 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
-                >
-                  Download Summary
-                </button>
-              </>
+            ) : summaryContent ? (
+              <pre className="text-gray-700 whitespace-pre-wrap">
+                {summaryContent}
+              </pre>
             ) : (
-              <p className="text-gray-600">No summarization available</p>
+              <p className="text-gray-600">No summary available</p>
             )}
+          </div>
+
+          {/* Download Buttons */}
+          <div className="flex gap-4 mt-4">
+            <button
+              onClick={() =>
+                downloadFile(transcriptContent, "transcript.txt")
+              }
+              disabled={!transcriptContent}
+              className={`${
+                transcriptContent
+                  ? "bg-indigo-600 hover:bg-indigo-700"
+                  : "bg-gray-400"
+              } text-white px-4 py-2 rounded-lg`}
+            >
+              Download Transcript
+            </button>
+            <button
+              onClick={() => downloadFile(summaryContent, "summary.txt")}
+              disabled={!summaryContent}
+              className={`${
+                summaryContent
+                  ? "bg-indigo-600 hover:bg-indigo-700"
+                  : "bg-gray-400"
+              } text-white px-4 py-2 rounded-lg`}
+            >
+              Download Summary
+            </button>
           </div>
         </div>
       </div>
