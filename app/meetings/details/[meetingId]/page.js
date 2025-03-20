@@ -246,17 +246,17 @@ export default function MeetingDetailsPage() {
           </div>
 
           {/* Content Section */}
-          <div className="bg-gray-50 rounded-lg p-4 max-h-[400px] overflow-y-auto mt-4">
+          <div className="bg-black rounded-lg p-4 h-[10rem] overflow-y-auto mt-4">
             {activeTab === "transcript" ? (
               transcriptContent ? (
-                <pre className="text-gray-700 whitespace-pre-wrap">
+                <pre className="text-white whitespace-pre-wrap">
                   {transcriptContent}
                 </pre>
               ) : (
                 <p className="text-gray-600">No transcript available</p>
               )
             ) : summaryContent ? (
-              <pre className="text-gray-700 whitespace-pre-wrap">
+              <pre className="text-white whitespace-pre-wrap">
                 {summaryContent}
               </pre>
             ) : (
