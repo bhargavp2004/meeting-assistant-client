@@ -97,12 +97,6 @@ export default function Navbar() {
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border">
                     <button
-                      onClick={() => router.push("/profile")}
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left"
-                    >
-                      View Profile
-                    </button>
-                    <button
                       onClick={handleLogout}
                       className="flex items-center w-full px-4 py-2 text-gray-700 hover:bg-gray-100"
                     >
