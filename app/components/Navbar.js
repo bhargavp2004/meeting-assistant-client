@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../components/AuthProvider";
-import { Brain, LogOut, UserCircle2, Menu, X } from "lucide-react";
+import { Brain, LogOut, UserCircle2, Menu, X, BrainCircuit } from "lucide-react";
 
 export default function Navbar() {
   const { isAuthenticated, logout, user } = useAuth();
@@ -17,7 +17,7 @@ export default function Navbar() {
       .then((res) => {
         if (res.ok) {
           logout();
-          router.push("/home");
+          router.push("/");
         }
       })
       .catch(() => router.push("/login"));
@@ -30,9 +30,9 @@ export default function Navbar() {
           {/* Logo */}
           <div
             className="flex items-center space-x-4 cursor-pointer"
-            onClick={() => router.push("/home")}
+            onClick={() => router.push("/")}
           >
-            <Brain className="h-7 w-7 text-indigo-600" />
+            <BrainCircuit className="h-7 w-7 text-indigo-600" />
             <h1 className="text-xl font-semibold text-gray-800">Meeting Assistant</h1>
           </div>
 
@@ -46,7 +46,7 @@ export default function Navbar() {
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-6 ml-auto">
             <button
-              onClick={() => router.push("/home")}
+              onClick={() => router.push("/")}
               className={`relative text-gray-700 hover:text-indigo-600 px-4 py-2 rounded-md text-md font-medium transition-colors ${
                 pathname === "/" ? "text-indigo-600 border-b-2 border-indigo-600" : ""
               }`}
@@ -127,7 +127,7 @@ export default function Navbar() {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden flex flex-col space-y-2 mt-4 bg-white shadow-lg p-4 rounded-md">
-            <button onClick={() => router.push("/home")} className="text-gray-700 hover:text-indigo-600">
+            <button onClick={() => router.push("/")} className="text-gray-700 hover:text-indigo-600">
               Home
             </button>
             {isAuthenticated && (

@@ -1,7 +1,7 @@
 "use client";
-import { Brain, Video, FileText } from "lucide-react";
+import { Brain, Video, FileText, BrainCircuit } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "../components/AuthProvider";
+import { useAuth } from "./components/AuthProvider";
 
 const Home = () => {
   const router = useRouter();
