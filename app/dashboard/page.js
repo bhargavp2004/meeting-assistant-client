@@ -10,8 +10,6 @@ export default function Dashboard() {
   const [meetings, setMeetings] = useState([]);
   const [filteredMeetings, setFilteredMeetings] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [editMeeting, setEditMeeting] = useState(null);
-  const [newTitle, setNewTitle] = useState("");
   const [deleteMeetingId, setDeleteMeetingId] = useState(null);
   const router = useRouter();
   const email = localStorage.getItem("email");
@@ -86,51 +84,6 @@ export default function Dashboard() {
       setFilteredMeetings(filtered);
     }
   }, [searchTerm, meetings, isAdmin]);
-
-  const openEditModal = (meeting) => {
-    setEditMeeting(meeting);
-    setNewTitle(meeting.title);
-  };
-
-  const closeEditModal = () => {
-    setEditMeeting(null);
-    setNewTitle("");
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editMeeting) return;
-    try {
-      const res = await fetch(
-        `http://localhost:3000/media/meetings/${editMeeting.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title: newTitle }),
-          credentials: "include",
-        }
-      );
-
-      const result = await res.json();
-
-      if (res.ok) {
-        setMeetings((prevMeetings) =>
-          prevMeetings.map((m) =>
-            m.id === editMeeting.id ? { ...m, title: newTitle } : m
-          )
-        );
-        toast.success("Meeting details edited successfully! Redirecting...", { autoClose: 2000 });
-        closeEditModal();
-      }
-      else {
-        toast.error(`Failed to edit meeting details. ${result.error}`, { autoClose: 2000 });
-        closeEditModal();
-      }
-    } catch (error) {
-      // console.error("Error updating meeting:", error);
-      toast.error(`Failed to edit meeting details.`, { autoClose: 2000 });
-      closeEditModal();
-    }
-  };
 
   const confirmDelete = async () => {
     if (!deleteMeetingId) return;
@@ -286,7 +239,7 @@ export default function Dashboard() {
             </button>
             <button
               className="text-green-600 hover:text-green-700 flex items-center text-xs sm:text-sm"
-              onClick={() => openEditModal(meeting)}
+              onClick={() => router.push(`/meetings/updateMeeting/${meeting.id}?meetingTitle=${meeting.title}`)}
             >
               <Pencil className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> Edit
             </button>
@@ -295,13 +248,6 @@ export default function Dashboard() {
               onClick={() => setDeleteMeetingId(meeting.id)}
             >
               <Trash className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> Delete
-            </button>
-            <button
-              onClick={() => router.push(`/meetings/meetingAccess/${meeting.id}`)}
-              className="text-indigo-600 hover:text-indigo-700 flex items-center text-xs sm:text-sm flex-nowrap"
-            >
-              <ShieldAlert className="h-4 w-4 mr-1" />
-              Manage Access
             </button>
           </div>
         </div>
@@ -335,37 +281,6 @@ export default function Dashboard() {
           </p>
         )}
       </div>
-
-      {/* Edit Modal */}
-      {editMeeting && !isAdmin && (
-        <div className="fixed text-gray-900 inset-0 flex items-center justify-center bg-black bg-opacity-30 px-2 sm:px-0">
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-base sm:text-lg font-semibold mb-4">
-              Edit Meeting Title
-            </h2>
-            <input
-              type="text"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base"
-            />
-            <div className="mt-4 flex justify-end space-x-2">
-              <button
-                onClick={closeEditModal}
-                className="px-3 sm:px-4 py-1 sm:py-2 bg-gray-300 rounded-lg hover:bg-gray-400 text-sm sm:text-base"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveEdit}
-                className="px-3 sm:px-4 py-1 sm:py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm sm:text-base"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Delete Confirmation Modal */}
       {deleteMeetingId && (
