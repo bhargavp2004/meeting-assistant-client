@@ -221,7 +221,7 @@ export default function Dashboard() {
       {meetings.map((meeting) => (
         <div
           key={meeting.id}
-          className="bg-white rounded-lg shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow"
+          className="bg-white rounded-lg shadow-lg ring-1 ring-gray-200 p-4 sm:p-6 hover:shadow-xl transition-shadow"
         >
           <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2 truncate">
             {meeting.title}

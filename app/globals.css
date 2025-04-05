@@ -17,5 +17,26 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  /* font-family: Arial, Helvetica, sans-serif; */
+  font-family: var(--font-montserrat), sans-serif;
+  
+}
+
+/* Customize the scrollbar */
+/* Custom thin scrollbar with Indigo color */
+::-webkit-scrollbar {
+  width: 6px; /* Thin scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Light background */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4f46e5; /* Indigo-600 (#4f46e5) */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4338ca; /* Darker Indigo-700 on hover */
 }

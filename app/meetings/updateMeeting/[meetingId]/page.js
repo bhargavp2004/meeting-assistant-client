@@ -70,7 +70,8 @@ const MeetingUpdationPage = () => {
             .then((res) => res.json())
             .then((data) => {
                 if (data.error) {
-                    toast.error("Meeting updation failed : ", data.error);
+                    console.log("Data : ", data);
+                    toast.error(`Meeting updation failed : ${data.error}`);
                 } else {
                     const emailsToAdd = validEmails.map((email) => ({ username: "", email: email }));
                     setAccessList([...accessList, ...emailsToAdd]);

@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@next/font": "^14.2.15",
     "@vitalets/google-translate-api": "^9.2.1",
     "assemblyai": "^4.9.0",
     "lucide-react": "^0.479.0",
